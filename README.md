@@ -74,6 +74,36 @@ Money collected on a fraudulent case is reversed and costs a scheme fee on top. 
 therefore subtracts the reversal *and* the fee, which makes "recover everything" a losing
 strategy and gives the fraud block real economic weight rather than a compliance checkbox.
 
+## Results on the committed seed
+
+`bun run eval`, 2000 cases, seed `recoup-buildathon-2026-v1`:
+
+| Metric | no_action | fixed_retry_3x24h | **recoup** |
+|---|---:|---:|---:|
+| recovery rate | 22.3% | 31.8% | **54.8%** |
+| net value | ₹29.31L | ₹42.79L | **₹75.12L** |
+| actions executed | 0 | 5,108 | **1,771** |
+| churn penalty | ₹0 | ₹0 | ₹8,114 |
+| fraud cases untouched | 69 | 1 | **65** |
+
+**Incremental recovery vs the fixed policy: ₹32.33L**, using roughly a third of
+the actions. Diagnosis accuracy is 97.1% overall; on the ambiguous-evidence path
+that reaches the AI interpreter it is 74.2%.
+
+Two results worth stating plainly rather than burying:
+
+**Naive retry beats Recoup on `issuer_down`** (₹12.67L vs ₹12.31L). When an issuer
+outage clears, silently re-charging really is better than asking the customer to pay
+again — no friction, no message. Recoup loses that class *because it will not fake a
+retry it cannot perform*. That gap is the honest price of the provider boundary.
+
+**Pricing customer fatigue was the single biggest lever.** An earlier version scored
+conversion and channel cost but ignored the cost of annoying someone. It bought
+revenue with customer lifetime value: ₹27.7L of churn, and `invoice_overdue` scored
+*worse than doing nothing*. Charging expected relationship damage against each repeat
+contact cut churn to ₹8.1k and raised net value while taking **fewer** actions. The
+guard now blocks ~1,400 low-value follow-ups that the naive policy would have sent.
+
 ## Evaluation arms
 
 | Arm | Behaviour |
@@ -102,7 +132,7 @@ needed for the evaluation or the demo.
 ## Status
 
 - [x] **Slice 1** — shared evaluation world, keyed potential outcomes, baseline arms
-- [ ] **Slice 2** — diagnosis, policy, safety guard
+- [x] **Slice 2** — diagnosis, policy, safety guard
 - [ ] **Slice 3** — durable action state, atomic claim, idempotency
 - [ ] **Slice 4** — Recoup arm and attribution metrics
 - [ ] **Slice 5** — Razorpay Test Mode integration and reconciliation

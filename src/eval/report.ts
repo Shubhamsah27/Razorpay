@@ -1,3 +1,4 @@
+import type { DecisionMetrics } from "./decisions";
 import { formatRupees, type ArmMetrics } from "./metrics";
 
 function pad(value: string, width: number): string {
@@ -87,6 +88,43 @@ export function renderReport(input: ReportInput): string {
           .map((m) => padLeft(formatRupees(m.byFailureClass[failureClass]?.netValuePaise ?? 0), column))
           .join(""),
     );
+  }
+
+  return lines.join("\n");
+}
+
+export function renderDecisionSection(metrics: DecisionMetrics): string {
+  const lines: string[] = [];
+  const label = 30;
+
+  const row = (name: string, value: string): void => {
+    lines.push(pad(name, label) + padLeft(value, 14));
+  };
+
+  lines.push("RECOUP DECISION AUDIT");
+  lines.push("-".repeat(label + 14));
+  row("decisions recorded", String(metrics.decisionsRecorded));
+  row("approved", String(metrics.approved));
+  row("blocked by guard", String(metrics.blocked));
+  row("rejected at review", String(metrics.rejected));
+  row("frozen (no supported action)", String(metrics.frozen));
+  lines.push("");
+  row("diagnosed by rule", String(metrics.diagnosedByRule));
+  row("diagnosed by AI", String(metrics.diagnosedByAi));
+  row("diagnosed by fallback", String(metrics.diagnosedByFallback));
+  row("diagnosis accuracy", percent(metrics.diagnosisAccuracy));
+  row("AI-path accuracy", percent(metrics.aiDiagnosisAccuracy));
+  lines.push("");
+  row("fraud cases frozen", String(metrics.fraudCasesFrozen));
+  row("fraud blocks on clean cases", String(metrics.fraudBlocksOnLegitimateCases));
+
+  lines.push("");
+  lines.push("BLOCKS BY RULE");
+  lines.push("-".repeat(label + 14));
+  for (const [rule, count] of Object.entries(metrics.blocksByRule).sort(
+    (left, right) => right[1] - left[1],
+  )) {
+    row(rule, String(count));
   }
 
   return lines.join("\n");

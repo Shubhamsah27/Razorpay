@@ -1,4 +1,5 @@
-import type { CaseLatents, FailureClass, PlannedAction } from "./types";
+import type { CaseLatents, PlannedAction } from "./types";
+import { buildEvent, type PaymentEvent } from "../diagnosis/events";
 import { keyedRange } from "../sim/rng";
 
 const NS = "signal";
@@ -14,7 +15,8 @@ function clamp01(value: number): number {
  */
 export interface CaseView {
   caseId: string;
-  failureClass: FailureClass;
+  /** Raw evidence. The true failure class is not given; it must be diagnosed. */
+  event: PaymentEvent;
   amountPaise: number;
   /** Observable: the merchant's own suppression list. */
   hasOptedOut: boolean;
@@ -48,7 +50,7 @@ export function toCaseView(masterSeed: string, latents: CaseLatents): CaseView {
 
   return {
     caseId: latents.caseId,
-    failureClass: latents.failureClass,
+    event: buildEvent(masterSeed, latents),
     amountPaise: latents.amountPaise,
     hasOptedOut: latents.optedOut,
     priorPaymentSuccessRate: clamp01(latents.responsiveness + engagementNoise),
