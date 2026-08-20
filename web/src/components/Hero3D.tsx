@@ -7,6 +7,9 @@ const ROWS = 16;
 const SPACING = 0.85;
 const COUNT = COLUMNS * ROWS;
 
+/** Tiles actually drawn. Exported so the caption cannot overstate the sample. */
+export const FIELD_TILE_COUNT = COUNT;
+
 /**
  * Colour is the case's fate, not decoration. Muted on purpose: the recovered
  * band is the only thing allowed to glow.

@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import showcaseData from "./data/showcase.json";
 import { CaseDetail } from "./components/CaseDetail";
 import { CaseQueue } from "./components/CaseQueue";
-import { Hero3D } from "./components/Hero3D";
+import { FIELD_TILE_COUNT, Hero3D } from "./components/Hero3D";
+import { PipelineFlow } from "./components/PipelineFlow";
 import { percent, rupees, rupeesShort } from "./lib/format";
 import type { ArmMetrics, SceneName, Showcase } from "./types";
 
@@ -207,8 +208,8 @@ export default function App() {
             <span className="crosshair br" />
             <Hero3D recoveryRate={recoup.recoveryRate} organicRate={noAction.recoveryRate} />
             <div className="field-caption">
-              {recoup.caseCount.toLocaleString("en-IN")} simulated at-risk payments · colour
-              by outcome
+              {FIELD_TILE_COUNT} tiles sampled from {recoup.caseCount.toLocaleString("en-IN")}{" "}
+              cases · colour by outcome, in population proportion
             </div>
             <div className="field-legend">
               <span className="field-key">
@@ -297,6 +298,16 @@ export default function App() {
               {SCENE_LABELS[scene]}
             </button>
           ))}
+        </div>
+
+        <div className="card pipeline-wrap">
+          <div className="pipeline-head">
+            <span className="eyebrow">Runtime path · {selected.caseId.replace("case_", "case #")}</span>
+            <span className="pipeline-hint">
+              every stage below is this case's own record, not an illustration
+            </span>
+          </div>
+          <PipelineFlow audit={selected} />
         </div>
 
         <div className="desk">
