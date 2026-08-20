@@ -47,14 +47,14 @@ export function stateTone(state: string): "green" | "red" | "amber" | "neutral" 
 }
 
 export const STATE_COLOR: Record<string, string> = {
-  succeeded: "#34d399",
-  failed: "#f2545b",
-  blocked: "#f2545b",
-  rejected: "#f2545b",
-  outcome_unknown: "#f4b942",
-  reconciling: "#f4b942",
-  awaiting_approval: "#f4b942",
-  executing: "#6e79f2",
-  ready: "#6f7583",
-  planned: "#4a4f5c",
+  succeeded: "#2fd48a",
+  failed: "#ff6b72",
+  blocked: "#ff6b72",
+  rejected: "#ff6b72",
+  outcome_unknown: "#f0b849",
+  reconciling: "#f0b849",
+  awaiting_approval: "#f0b849",
+  executing: "#4d7fff",
+  ready: "#5d6d86",
+  planned: "#40566d",
 };

@@ -134,19 +134,28 @@ export default function App() {
       </header>
 
       <section className="hero">
-        <Hero3D recoveryRate={recoup.recoveryRate} organicRate={noAction.recoveryRate} />
         <div className="hero-inner">
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          <motion.div
+            className="eyebrow"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            Recover the revenue that is genuinely recoverable.
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
+            AI Revenue Recovery · Razorpay Buildathon
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.09, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+          >
+            Recover the revenue that is <em>genuinely</em> recoverable
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
           >
             Recoup diagnoses each failed payment, prices the one recovery action worth
             taking, and puts it through a deterministic safety guard before anything
@@ -156,39 +165,76 @@ export default function App() {
 
           <motion.div
             className="hero-stats"
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div>
-              <div className="hero-stat-value" style={{ color: "#34d399" }}>
+            <div className="hero-stat">
+              <div className="hero-stat-value" style={{ color: "var(--rzp-lime)" }}>
                 {rupeesShort(showcase.incrementalNetValuePaise)}
               </div>
               <div className="hero-stat-label">Incremental net value</div>
             </div>
-            <div>
+            <div className="hero-stat">
               <div className="hero-stat-value">{percent(recoup.recoveryRate)}</div>
               <div className="hero-stat-label">Recovery rate</div>
             </div>
-            <div>
+            <div className="hero-stat">
               <div className="hero-stat-value">
                 {percent(showcase.decisions.diagnosisAccuracy)}
               </div>
               <div className="hero-stat-label">Diagnosis accuracy</div>
             </div>
-            <div>
+            <div className="hero-stat">
               <div className="hero-stat-value">
                 {showcase.decisions.blocked.toLocaleString("en-IN")}
               </div>
-              <div className="hero-stat-label">Actions blocked by guard</div>
+              <div className="hero-stat-label">Blocked by guard</div>
             </div>
           </motion.div>
         </div>
+
+        <motion.div
+          className="field"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.1, delay: 0.3 }}
+        >
+          <div className="field-frame">
+            <span className="crosshair tl" />
+            <span className="crosshair tr" />
+            <span className="crosshair bl" />
+            <span className="crosshair br" />
+            <Hero3D recoveryRate={recoup.recoveryRate} organicRate={noAction.recoveryRate} />
+            <div className="field-caption">
+              {recoup.caseCount.toLocaleString("en-IN")} simulated at-risk payments · colour
+              by outcome
+            </div>
+            <div className="field-legend">
+              <span className="field-key">
+                <span className="field-swatch" style={{ background: "#7ea0ff" }} />
+                Recovered by Recoup
+              </span>
+              <span className="field-key">
+                <span className="field-swatch" style={{ background: "#40566d" }} />
+                Would have paid anyway
+              </span>
+              <span className="field-key">
+                <span className="field-swatch" style={{ background: "#a08a4c" }} />
+                Still at risk
+              </span>
+              <span className="field-key">
+                <span className="field-swatch" style={{ background: "#192839" }} />
+                Unrecoverable
+              </span>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       <section className="section">
         <div className="section-head">
-          <h2>Against the baselines</h2>
+          <h2>Against the <em>baselines</em></h2>
           <span>
             {recoup.caseCount.toLocaleString("en-IN")} cases · every arm reads the same
             potential-outcome table
@@ -198,15 +244,15 @@ export default function App() {
 
         <div className="metric-grid" style={{ marginTop: 12 }}>
           <div className="card metric">
-            <span className="metric-accent" style={{ background: "#34d399" }} />
+            <span className="metric-accent" style={{ background: "var(--rzp-lime)" }} />
             <div className="metric-label">Primary metric</div>
-            <div className="metric-value" style={{ color: "#34d399" }}>
+            <div className="metric-value" style={{ color: "var(--rzp-lime)" }}>
               {rupees(showcase.incrementalNetValuePaise)}
             </div>
             <div className="metric-sub">Net value over the fixed retry policy</div>
           </div>
           <div className="card metric">
-            <span className="metric-accent" style={{ background: "#6e79f2" }} />
+            <span className="metric-accent" style={{ background: "var(--rzp-blue-light)" }} />
             <div className="metric-label">Fraud discipline</div>
             <div className="metric-value">{showcase.decisions.fraudCasesFrozen}</div>
             <div className="metric-sub">
@@ -215,7 +261,7 @@ export default function App() {
             </div>
           </div>
           <div className="card metric">
-            <span className="metric-accent" style={{ background: "#a78bfa" }} />
+            <span className="metric-accent" style={{ background: "var(--rzp-blue)" }} />
             <div className="metric-label">AI interpretation</div>
             <div className="metric-value">
               {percent(showcase.decisions.aiDiagnosisAccuracy)}
@@ -229,7 +275,7 @@ export default function App() {
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="section-head">
-          <h2>Recovery Desk</h2>
+          <h2>Recovery <em>Desk</em></h2>
           <span>every decision, guard rule, and provider transition on the record</span>
         </div>
 

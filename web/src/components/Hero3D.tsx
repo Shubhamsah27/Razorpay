@@ -2,17 +2,20 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
-const COLUMNS = 44;
-const ROWS = 20;
-const SPACING = 0.62;
+const COLUMNS = 34;
+const ROWS = 16;
+const SPACING = 0.85;
 const COUNT = COLUMNS * ROWS;
 
-const RECOVERED = new THREE.Color("#6e79f2");
-const ORGANIC = new THREE.Color("#34d399");
-const AT_RISK = new THREE.Color("#f4b942");
-const LOST = new THREE.Color("#2a2e3a");
+/**
+ * Colour is the case's fate, not decoration. Muted on purpose: the recovered
+ * band is the only thing allowed to glow.
+ */
+const RECOVERED = new THREE.Color("#7ea0ff");
+const ORGANIC = new THREE.Color("#40566d");
+const AT_RISK = new THREE.Color("#a08a4c");
+const LOST = new THREE.Color("#192839");
 
-/** Deterministic per-cell value, so the field looks identical on every load. */
 function cellValue(index: number): number {
   const x = Math.sin(index * 12.9898) * 43758.5453;
   return x - Math.floor(x);
@@ -27,35 +30,40 @@ function Field({ recoveryRate, organicRate }: FieldProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  const { positions, colors, phases } = useMemo(() => {
+  const { positions, colors, phases, kinds } = useMemo(() => {
     const positions = new Float32Array(COUNT * 2);
     const colors = new Float32Array(COUNT * 3);
     const phases = new Float32Array(COUNT);
+    const kinds = new Uint8Array(COUNT);
 
     for (let index = 0; index < COUNT; index += 1) {
       const column = index % COLUMNS;
       const row = Math.floor(index / COLUMNS);
-      const x = (column - COLUMNS / 2) * SPACING;
-      const z = (row - ROWS / 2) * SPACING;
+      const x = (column - (COLUMNS - 1) / 2) * SPACING;
+      const z = (row - (ROWS - 1) / 2) * SPACING;
       positions[index * 2] = x;
       positions[index * 2 + 1] = z;
-      phases[index] = Math.hypot(x, z);
+      phases[index] = Math.hypot(x, z * 1.35);
 
-      // Each cell is one payment; its colour is its fate under Recoup.
       const value = cellValue(index);
-      const color =
-        value < organicRate
-          ? ORGANIC
-          : value < recoveryRate
-            ? RECOVERED
-            : value < recoveryRate + 0.22
-              ? AT_RISK
-              : LOST;
+      let color = LOST;
+      let kind = 0;
+      if (value < organicRate) {
+        color = ORGANIC;
+        kind = 1;
+      } else if (value < recoveryRate) {
+        color = RECOVERED;
+        kind = 2;
+      } else if (value < recoveryRate + 0.18) {
+        color = AT_RISK;
+        kind = 3;
+      }
+      kinds[index] = kind;
       colors[index * 3] = color.r;
       colors[index * 3 + 1] = color.g;
       colors[index * 3 + 2] = color.b;
     }
-    return { positions, colors, phases };
+    return { positions, colors, phases, kinds };
   }, [recoveryRate, organicRate]);
 
   useFrame(({ clock }) => {
@@ -66,61 +74,52 @@ function Field({ recoveryRate, organicRate }: FieldProps) {
     for (let index = 0; index < COUNT; index += 1) {
       const x = positions[index * 2]!;
       const z = positions[index * 2 + 1]!;
-      const wave = Math.sin(phases[index]! * 0.55 - time * 1.15);
-      const lift = wave * 0.42;
-      const value = cellValue(index);
-      // Recovered cells ride higher, so the wave reads as value coming back.
-      const bias = value < recoveryRate ? 0.42 : 0;
+      const wave = Math.sin(phases[index]! * 0.42 - time * 0.85);
+      const recovered = kinds[index] === 2;
+      // Recovered cases ride the crest, so the motion reads as value returning.
+      const lift = wave * 0.34 + (recovered ? 0.34 : 0);
 
-      dummy.position.set(x, lift + bias, z);
-      dummy.scale.setScalar(0.2 + Math.max(0, wave) * 0.11 + bias * 0.16);
-      dummy.rotation.y = time * 0.12 + value * 3;
+      dummy.position.set(x, lift, z);
+      // Thin tiles read as a surface; towers read as a skyline.
+      dummy.scale.set(0.52, 0.07 + (recovered ? 0.05 : 0), 0.52);
+      dummy.rotation.set(0, 0, 0);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
-    mesh.rotation.y = Math.sin(time * 0.055) * 0.09;
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, COUNT]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, COUNT]} rotation={[0, -0.22, 0]}>
       <boxGeometry args={[1, 1, 1]}>
         <instancedBufferAttribute attach="attributes-color" args={[colors, 3]} />
       </boxGeometry>
-      <meshStandardMaterial
-        vertexColors
-        roughness={0.34}
-        metalness={0.62}
-        emissiveIntensity={0.5}
-      />
+      <meshStandardMaterial vertexColors roughness={0.62} metalness={0.08} />
     </instancedMesh>
   );
 }
 
 function Rig() {
-  useFrame(({ camera, pointer, clock }) => {
-    const time = clock.getElapsedTime();
-    camera.position.x += (pointer.x * 2.2 - camera.position.x) * 0.025;
-    camera.position.y += (7.4 + pointer.y * 1.1 - camera.position.y) * 0.025;
-    camera.position.z = 12.5 + Math.sin(time * 0.09) * 0.7;
-    camera.lookAt(0, 0, 0);
+  useFrame(({ camera, pointer }) => {
+    camera.position.x += (pointer.x * 1.1 - camera.position.x) * 0.02;
+    camera.position.y += (4.6 - pointer.y * 0.35 - camera.position.y) * 0.02;
+    camera.lookAt(0, -0.3, 0);
   });
   return null;
 }
 
 export function Hero3D({ recoveryRate, organicRate }: FieldProps) {
   return (
-    <div className="hero-canvas" aria-hidden="true">
+    <div className="field-canvas" aria-hidden="true">
       <Canvas
         dpr={[1, 1.75]}
-        camera={{ position: [0, 7.4, 12.5], fov: 42 }}
+        camera={{ position: [0, 4.6, 11.5], fov: 38 }}
         gl={{ antialias: true, alpha: true }}
       >
-        <fog attach="fog" args={["#08090c", 14, 30]} />
-        <ambientLight intensity={0.42} />
-        <directionalLight position={[6, 12, 6]} intensity={1.5} color="#c9d1ff" />
-        <pointLight position={[-8, 4, -4]} intensity={45} color="#a78bfa" distance={26} />
-        <pointLight position={[9, 3, 5]} intensity={32} color="#6e79f2" distance={24} />
+        <fog attach="fog" args={["#070a11", 10, 21]} />
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[3, 9, 5]} intensity={1.35} color="#e8eeff" />
+        <pointLight position={[-7, 3, 2]} intensity={14} color="#305eff" distance={18} />
         <Field recoveryRate={recoveryRate} organicRate={organicRate} />
         <Rig />
       </Canvas>

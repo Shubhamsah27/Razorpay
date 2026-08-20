@@ -4,9 +4,9 @@ import type { CaseAudit, GuardRule } from "../types";
 import { ActionTimeline } from "./ActionTimeline";
 
 const RULE_ICON: Record<string, { glyph: string; color: string; background: string }> = {
-  blocked: { glyph: "✕", color: "#f2545b", background: "rgba(242,84,91,0.14)" },
-  review: { glyph: "!", color: "#f4b942", background: "rgba(244,185,66,0.14)" },
-  automatic: { glyph: "✓", color: "#34d399", background: "rgba(52,211,153,0.14)" },
+  blocked: { glyph: "✕", color: "#ff6b72", background: "rgba(255,107,114,0.14)" },
+  review: { glyph: "!", color: "#f0b849", background: "rgba(240,184,73,0.14)" },
+  automatic: { glyph: "✓", color: "#2fd48a", background: "rgba(47,212,138,0.14)" },
 };
 
 function RuleRow({ rule }: { rule: GuardRule }) {
@@ -34,9 +34,15 @@ function sourceBadge(source: string) {
   return <span className="badge amber">safe fallback</span>;
 }
 
+const OUTCOME_BADGE: Record<string, string> = {
+  approved: "green",
+  blocked: "red",
+  rejected: "red",
+  not_supported: "amber",
+};
+
 export function CaseDetail({ audit }: { audit: CaseAudit }) {
   const decision = audit.decisions[0];
-  const guardRules = audit.decisions.flatMap((entry) => entry.guard.rules);
 
   return (
     <AnimatePresence mode="wait">
@@ -93,7 +99,7 @@ export function CaseDetail({ audit }: { audit: CaseAudit }) {
           </div>
 
           <div className="block">
-            <div className="block-title">Decision</div>
+            <div className="block-title">Case</div>
             <div className="kv">
               <span className="kv-key">intent</span>
               <span className="kv-val" style={{ maxWidth: "60%" }}>
@@ -101,18 +107,12 @@ export function CaseDetail({ audit }: { audit: CaseAudit }) {
               </span>
             </div>
             <div className="kv">
-              <span className="kv-key">expected value</span>
-              <span className="kv-val">
-                {decision === undefined ? "—" : rupees(decision.expectedValuePaise, 0)}
-              </span>
-            </div>
-            <div className="kv">
               <span className="kv-key">risk score</span>
               <span className="kv-val">{audit.riskScore.toFixed(2)}</span>
             </div>
             <div className="kv">
-              <span className="kv-key">outcome</span>
-              <span className="kv-val">{titleise(decision?.outcome ?? "none")}</span>
+              <span className="kv-key">attempts considered</span>
+              <span className="kv-val">{audit.decisions.length}</span>
             </div>
             {audit.paidAtHour !== null && (
               <div className="kv">
@@ -123,11 +123,37 @@ export function CaseDetail({ audit }: { audit: CaseAudit }) {
           </div>
 
           <div className="block">
-            <div className="block-title">Safety guard</div>
-            {guardRules.length === 0 ? (
-              <div className="rule-detail">No rule fired; the action ran automatically.</div>
+            <div className="block-title">
+              Decisions
+              <span style={{ color: "var(--faint)", textTransform: "none", letterSpacing: 0 }}>
+                — each attempt judged on its own
+              </span>
+            </div>
+            {audit.decisions.length === 0 ? (
+              <div className="rule-detail">No decision was recorded for this case.</div>
             ) : (
-              guardRules.map((rule, index) => <RuleRow rule={rule} key={`${rule.rule}-${index}`} />)
+              audit.decisions.map((entry) => (
+                <div className="attempt" key={entry.attemptNumber}>
+                  <div className="attempt-head">
+                    <span className="attempt-n">Attempt {entry.attemptNumber}</span>
+                    <span className={`badge ${OUTCOME_BADGE[entry.outcome] ?? "neutral"}`}>
+                      {titleise(entry.outcome)}
+                    </span>
+                    <span className="attempt-ev">
+                      EV {rupees(entry.expectedValuePaise, 0)}
+                    </span>
+                  </div>
+                  {entry.guard.rules.length === 0 ? (
+                    <div className="rule-detail">
+                      No rule fired; the action ran automatically.
+                    </div>
+                  ) : (
+                    entry.guard.rules.map((rule, index) => (
+                      <RuleRow rule={rule} key={`${rule.rule}-${index}`} />
+                    ))
+                  )}
+                </div>
+              ))
             )}
           </div>
 
@@ -160,7 +186,7 @@ export function CaseDetail({ audit }: { audit: CaseAudit }) {
                 <div className="rule" key={index}>
                   <span
                     className="rule-icon"
-                    style={{ color: "#f4b942", background: "rgba(244,185,66,0.14)" }}
+                    style={{ color: "#f0b849", background: "rgba(240,184,73,0.14)" }}
                   >
                     !
                   </span>
