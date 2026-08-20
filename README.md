@@ -133,8 +133,8 @@ needed for the evaluation or the demo.
 
 - [x] **Slice 1** — shared evaluation world, keyed potential outcomes, baseline arms
 - [x] **Slice 2** — diagnosis, policy, safety guard
-- [ ] **Slice 3** — durable action state, atomic claim, idempotency
-- [ ] **Slice 4** — Recoup arm and attribution metrics
+- [x] **Slice 3** — durable action state, atomic claim, idempotency
+- [x] **Slice 4** — Recoup arm and attribution metrics
 - [ ] **Slice 5** — Razorpay Test Mode integration and reconciliation
 - [ ] **Slice 6** — Recovery Desk UI
 - [ ] **Slice 7** — submission package
