@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "eval": "bun run src/eval/run.ts",
-    "demo": "bun run src/demo/run.ts",
+    "showcase": "bun run src/demo/showcase.ts",
+    "demo": "bun run showcase && cd web && bun install && bun run dev",
+    "demo:build": "bun run showcase && cd web && bun install && bun run build",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
