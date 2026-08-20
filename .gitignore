@@ -8,3 +8,6 @@ dist/
 out/
 .DS_Store
 *.tsbuildinfo
+
+# Scratch: AEO/GEO prototype, unrelated to the Recoup submission
+AEO GEO Analytics visibility prototype/

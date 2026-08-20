@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { rupees, titleise } from "../lib/format";
+import { caseStatus, wasStoppedByGuard } from "../lib/caseStatus";
 import type { CaseAudit } from "../types";
 
 export type QueueFilter =
@@ -26,7 +27,9 @@ export function matchesFilter(audit: CaseAudit, filter: QueueFilter): boolean {
     case "recovered":
       return audit.incrementalPaise > 0;
     case "blocked":
-      return audit.actions.length === 0;
+      // Guard-stopped, not merely action-less: a case can settle organically
+      // before its first action was ever due.
+      return wasStoppedByGuard(audit) && audit.actions.length === 0;
     case "review":
       return audit.decisions.some((decision) => decision.guard.decision === "review");
     case "reconciled":
@@ -36,16 +39,17 @@ export function matchesFilter(audit: CaseAudit, filter: QueueFilter): boolean {
   }
 }
 
+const STATUS_BADGE: Record<string, string> = {
+  recovered: "green",
+  reconciled: "amber",
+  organic: "neutral",
+  stopped: "red",
+  unrecovered: "neutral",
+};
+
 function statusBadge(audit: CaseAudit) {
-  if (audit.actions.length === 0) {
-    const blocked = audit.decisions[0]?.outcome ?? "no action";
-    return <span className="badge red">{titleise(blocked)}</span>;
-  }
-  if (audit.actions.some((action) => action.reconciled)) {
-    return <span className="badge amber">reconciled</span>;
-  }
-  if (audit.incrementalPaise > 0) return <span className="badge green">recovered</span>;
-  return <span className="badge neutral">in flight</span>;
+  const status = caseStatus(audit);
+  return <span className={`badge ${STATUS_BADGE[status]}`}>{titleise(status)}</span>;
 }
 
 interface CaseQueueProps {

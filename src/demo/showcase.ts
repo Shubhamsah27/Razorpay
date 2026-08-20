@@ -11,6 +11,7 @@ import { ActionStore } from "../store/actions";
 import { summariseArm, type ArmMetrics } from "../eval/metrics";
 import { summariseDecisions, type DecisionMetrics } from "../eval/decisions";
 import { runArm } from "../eval/simulate";
+import { HORIZON_HOURS, type ArmResult } from "../domain/types";
 import { FIXED_CASE_COUNT, FIXED_MASTER_SEED } from "../eval/config";
 
 const SHOWCASE_SEED = FIXED_MASTER_SEED;
@@ -30,18 +31,68 @@ export type SceneName =
   | "subscription_observation"
   | "reconciled_failure";
 
+export interface TimelineSeries {
+  armName: string;
+  cumulativeRecoveredPaise: number[];
+  cumulativeIncrementalPaise: number[];
+}
+
+export interface Timeline {
+  hours: number[];
+  series: TimelineSeries[];
+}
+
 export interface Showcase {
   seed: string;
   caseCount: number;
   arms: ArmMetrics[];
   decisions: DecisionMetrics;
   incrementalNetValuePaise: number;
+  timeline: Timeline;
   scenes: Record<SceneName, string | null>;
   cases: CaseAudit[];
 }
 
 function pickScene(cases: CaseAudit[], predicate: (audit: CaseAudit) => boolean): string | null {
   return cases.find(predicate)?.caseId ?? null;
+}
+
+/** Sample points across the simulation horizon, in hours. */
+const TIMELINE_STEP_HOURS = 12;
+
+/**
+ * Cumulative recovery through the horizon, per arm. Derived from the same
+ * per-case outcomes the headline metrics use, so the curve and the totals can
+ * never disagree.
+ */
+function buildTimeline(results: ArmResult[]): Timeline {
+  const hours: number[] = [];
+  for (let hour = 0; hour <= HORIZON_HOURS; hour += TIMELINE_STEP_HOURS) hours.push(hour);
+
+  return {
+    hours,
+    series: results.map((result) => ({
+      armName: result.armName,
+      cumulativeRecoveredPaise: hours.map((hour) =>
+        result.cases.reduce(
+          (total, outcome) =>
+            outcome.paidAtHour !== null && outcome.paidAtHour <= hour
+              ? total + outcome.paidAmountPaise
+              : total,
+          0,
+        ),
+      ),
+      cumulativeIncrementalPaise: hours.map((hour) =>
+        result.cases.reduce(
+          (total, outcome) =>
+            outcome.paidAtHour !== null && outcome.paidAtHour <= hour
+              ? total + outcome.incrementalAmountPaise
+              : total,
+          0,
+        ),
+      ),
+    })),
+  };
 }
 
 export async function buildShowcase(): Promise<Showcase> {
@@ -82,9 +133,11 @@ export async function buildShowcase(): Promise<Showcase> {
     caseCount: FIXED_CASE_COUNT,
   });
   const evalRecoup = createRecoupPolicy();
-  const arms = [noActionPolicy, fixedRetryPolicy, evalRecoup.policy].map((policy) =>
-    summariseArm(runArm(SHOWCASE_SEED, evalPopulation, policy), evalPopulation),
+  const armResults = [noActionPolicy, fixedRetryPolicy, evalRecoup.policy].map((policy) =>
+    runArm(SHOWCASE_SEED, evalPopulation, policy),
   );
+  const arms = armResults.map((result) => summariseArm(result, evalPopulation));
+  const timeline = buildTimeline(armResults);
   const fixed = arms.find((arm) => arm.armName === fixedRetryPolicy.name)!;
   const recoupArm = arms.find((arm) => arm.armName === "recoup")!;
 
@@ -127,6 +180,7 @@ export async function buildShowcase(): Promise<Showcase> {
     arms,
     decisions: summariseDecisions(evalRecoup.decisions, evalPopulation),
     incrementalNetValuePaise: recoupArm.netValuePaise - fixed.netValuePaise,
+    timeline,
     scenes,
     cases: audits,
   };

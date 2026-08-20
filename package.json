@@ -8,8 +8,9 @@
     "showcase": "bun run src/demo/showcase.ts",
     "demo": "bun run showcase && cd web && bun install && bun run dev",
     "demo:build": "bun run showcase && cd web && bun install && bun run build",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "test": "bun test tests/",
+    "typecheck": "tsc --noEmit",
+    "test:web": "cd web && bun test tests/"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -1,0 +1,178 @@
+/* ---------- score-style chart header + checkbox legend ---------- */
+.score-head {
+  margin-bottom: 14px;
+}
+
+.score-label {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.score-value {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-pill {
+  padding: 2.5px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 550;
+  color: var(--green);
+  background: var(--green-soft);
+  border: 1px solid rgba(47, 212, 138, 0.28);
+}
+
+.score-legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.score-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.score-check.is-fixed {
+  cursor: default;
+  color: var(--text);
+}
+
+.score-check input {
+  accent-color: var(--rzp-blue);
+  margin: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.score-swatch {
+  width: 11px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.score-swatch.dashed {
+  height: 0;
+  width: 13px;
+  border-top: 2px dashed #5d6d86;
+  border-radius: 0;
+}
+
+/* ---------- narrow viewports ---------- */
+@media (max-width: 720px) {
+  .section,
+  .field {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  /* The seed is reference detail, not worth a line of phone width. */
+  .topbar-right .badge.neutral {
+    display: none;
+  }
+
+  .topbar {
+    padding: 0 14px;
+  }
+
+  .hero-inner {
+    padding: 56px 18px 24px;
+  }
+
+  .hero-stat {
+    flex-basis: 50%;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-stat:nth-child(2n) {
+    border-right: none;
+  }
+
+  .field-frame {
+    height: 300px;
+  }
+
+  .field-footer {
+    position: static;
+    padding: 0 14px 12px;
+    gap: 8px;
+  }
+
+  .field-frame::after {
+    display: none;
+  }
+
+  .bar-row {
+    grid-template-columns: 96px 1fr 62px;
+    gap: 8px;
+  }
+
+  .diverging-row {
+    grid-template-columns: 104px 1fr 64px;
+    gap: 8px;
+  }
+
+  .bar-label,
+  .diverging-label,
+  .bar-value,
+  .diverging-value {
+    font-size: 11.5px;
+  }
+
+  .detail,
+  .pipeline-wrap {
+    padding: 16px;
+  }
+
+  .queue {
+    position: static;
+    max-height: 480px;
+  }
+
+  .score-value {
+    font-size: 28px;
+  }
+
+  .score-legend {
+    gap: 14px;
+  }
+
+  .timeline-readout {
+    gap: 10px;
+    font-size: 11px;
+  }
+}
+
+/* The evidence block is fixed-width mono text; let it scroll inside its own
+   box rather than inflating the page's scroll width on narrow screens. */
+.evidence {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.detail,
+.card.detail {
+  max-width: 100%;
+  overflow-x: hidden;
+}

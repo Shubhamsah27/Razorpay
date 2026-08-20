@@ -106,12 +106,24 @@ export type SceneName =
   | "subscription_observation"
   | "reconciled_failure";
 
+export interface TimelineSeries {
+  armName: string;
+  cumulativeRecoveredPaise: number[];
+  cumulativeIncrementalPaise: number[];
+}
+
+export interface Timeline {
+  hours: number[];
+  series: TimelineSeries[];
+}
+
 export interface Showcase {
   seed: string;
   caseCount: number;
   arms: ArmMetrics[];
   decisions: DecisionMetrics;
   incrementalNetValuePaise: number;
+  timeline: Timeline;
   scenes: Record<SceneName, string | null>;
   cases: CaseAudit[];
 }

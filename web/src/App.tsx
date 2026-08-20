@@ -3,9 +3,10 @@ import { useMemo, useState } from "react";
 import showcaseData from "./data/showcase.json";
 import { CaseDetail } from "./components/CaseDetail";
 import { CaseQueue } from "./components/CaseQueue";
-import { FIELD_TILE_COUNT, Hero3D } from "./components/Hero3D";
 import { PipelineFlow } from "./components/PipelineFlow";
 import { ArmsChart, DeltaChart } from "./components/Charts";
+import { RecoveryTimeline } from "./components/RecoveryTimeline";
+import { FieldPanel } from "./components/FieldPanel";
 import { percent, rupees, rupeesShort } from "./lib/format";
 import type { ArmMetrics, SceneName, Showcase } from "./types";
 
@@ -98,9 +99,14 @@ function ArmTable({ arms }: { arms: ArmMetrics[] }) {
 
 export default function App() {
   const recoup = showcase.arms.find((arm) => arm.armName === "recoup")!;
-  const noAction = showcase.arms.find((arm) => arm.armName === "no_action")!;
   const fixed = showcase.arms.find((arm) => arm.armName === "fixed_retry_3x24h")!;
   const [showTable, setShowTable] = useState(false);
+  const [attempt, setAttempt] = useState(1);
+
+  const selectCase = (caseId: string) => {
+    setSelectedId(caseId);
+    setAttempt(1);
+  };
 
   const sceneEntries = useMemo(
     () =>
@@ -202,37 +208,13 @@ export default function App() {
           className="field"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.1, delay: 0.3 }}
+          transition={{ duration: 0.9, delay: 0.3 }}
         >
-          <div className="field-frame">
-            <span className="crosshair tl" />
-            <span className="crosshair tr" />
-            <span className="crosshair bl" />
-            <span className="crosshair br" />
-            <Hero3D recoveryRate={recoup.recoveryRate} organicRate={noAction.recoveryRate} />
-            <div className="field-caption">
-              {FIELD_TILE_COUNT} tiles sampled from {recoup.caseCount.toLocaleString("en-IN")}{" "}
-              cases · colour by outcome, in population proportion
-            </div>
-            <div className="field-legend">
-              <span className="field-key">
-                <span className="field-swatch" style={{ background: "#7ea0ff" }} />
-                Recovered by Recoup
-              </span>
-              <span className="field-key">
-                <span className="field-swatch" style={{ background: "#40566d" }} />
-                Would have paid anyway
-              </span>
-              <span className="field-key">
-                <span className="field-swatch" style={{ background: "#a08a4c" }} />
-                Still at risk
-              </span>
-              <span className="field-key">
-                <span className="field-swatch" style={{ background: "#192839" }} />
-                Unrecoverable
-              </span>
-            </div>
-          </div>
+          <FieldPanel
+            cases={showcase.cases}
+            selectedId={selected.caseId}
+            onSelect={selectCase}
+          />
         </motion.div>
       </section>
 
@@ -251,6 +233,10 @@ export default function App() {
           <div className="card">
             <DeltaChart challenger={recoup} baseline={fixed} />
           </div>
+        </div>
+
+        <div className="card" style={{ marginBottom: 12 }}>
+          <RecoveryTimeline timeline={showcase.timeline} arms={showcase.arms} />
         </div>
 
         <div style={{ marginBottom: 12 }}>
@@ -308,7 +294,7 @@ export default function App() {
               type="button"
               key={scene}
               className={`scene-chip ${activeScene === scene ? "active" : ""}`}
-              onClick={() => setSelectedId(caseId)}
+              onClick={() => selectCase(caseId)}
             >
               {activeScene === scene && (
                 <motion.span
@@ -329,14 +315,14 @@ export default function App() {
               every stage below is this case's own record, not an illustration
             </span>
           </div>
-          <PipelineFlow audit={selected} />
+          <PipelineFlow audit={selected} attempt={attempt} onAttemptChange={setAttempt} />
         </div>
 
         <div className="desk">
           <CaseQueue
             cases={showcase.cases}
             selectedId={selected.caseId}
-            onSelect={setSelectedId}
+            onSelect={selectCase}
           />
           <CaseDetail audit={selected} />
         </div>

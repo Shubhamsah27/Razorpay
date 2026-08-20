@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "bun test tests/"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
