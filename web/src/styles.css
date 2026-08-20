@@ -1192,3 +1192,222 @@ kbd {
   color: var(--faint);
   font-size: 12px;
 }
+
+/* ---------- charts ---------- */
+.chart {
+  position: relative;
+  padding: 18px;
+}
+
+.chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.chart-title {
+  font-size: 13.5px;
+  font-weight: 570;
+  letter-spacing: -0.01em;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chart-sub {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.chart-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.chart-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+/* --- horizontal bars --- */
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 132px 1fr 74px;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-label {
+  font-size: 12.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  position: relative;
+  height: 18px;
+  background: rgba(118, 142, 167, 0.09);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  /* Rounded data-end, square against the baseline. */
+  border-radius: 0 4px 4px 0;
+  transform-origin: left center;
+}
+
+.bar-value {
+  text-align: right;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* --- diverging --- */
+.diverging {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.diverging-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 78px;
+  align-items: center;
+  gap: 12px;
+}
+
+.diverging-label {
+  font-size: 12.3px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diverging-track {
+  position: relative;
+  height: 15px;
+}
+
+.diverging-axis {
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: rgba(118, 142, 167, 0.28);
+}
+
+.diverging-fill {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  display: block;
+}
+
+/* 2px surface gap either side of the zero axis. */
+.diverging-fill.ahead {
+  left: calc(50% + 2px);
+  border-radius: 0 3px 3px 0;
+  transform-origin: left center;
+}
+
+.diverging-fill.behind {
+  right: calc(50% + 2px);
+  border-radius: 3px 0 0 3px;
+  transform-origin: right center;
+}
+
+.diverging-value {
+  text-align: right;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.diverging-value.ahead {
+  color: #8fb0ff;
+}
+
+.diverging-value.behind {
+  color: #e58089;
+}
+
+/* --- tooltip --- */
+.chart-tip {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: rgba(9, 13, 21, 0.97);
+  box-shadow: var(--shadow);
+  max-width: 300px;
+}
+
+.chart-tip-title {
+  font-size: 12px;
+  font-weight: 570;
+}
+
+.chart-tip-body {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.table-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.table-toggle:hover {
+  color: var(--text-2);
+}
+
+/* Data marks are drawn, not animated. A transform-based reveal stays stuck at
+   frame zero whenever the tab throttles its animation clock, which would show a
+   wrong value; the chart is worth more correct than kinetic. */

@@ -5,6 +5,7 @@ import { CaseDetail } from "./components/CaseDetail";
 import { CaseQueue } from "./components/CaseQueue";
 import { FIELD_TILE_COUNT, Hero3D } from "./components/Hero3D";
 import { PipelineFlow } from "./components/PipelineFlow";
+import { ArmsChart, DeltaChart } from "./components/Charts";
 import { percent, rupees, rupeesShort } from "./lib/format";
 import type { ArmMetrics, SceneName, Showcase } from "./types";
 
@@ -98,6 +99,8 @@ function ArmTable({ arms }: { arms: ArmMetrics[] }) {
 export default function App() {
   const recoup = showcase.arms.find((arm) => arm.armName === "recoup")!;
   const noAction = showcase.arms.find((arm) => arm.armName === "no_action")!;
+  const fixed = showcase.arms.find((arm) => arm.armName === "fixed_retry_3x24h")!;
+  const [showTable, setShowTable] = useState(false);
 
   const sceneEntries = useMemo(
     () =>
@@ -241,7 +244,26 @@ export default function App() {
             potential-outcome table
           </span>
         </div>
-        <ArmTable arms={showcase.arms} />
+        <div className="chart-grid">
+          <div className="card">
+            <ArmsChart arms={showcase.arms} />
+          </div>
+          <div className="card">
+            <DeltaChart challenger={recoup} baseline={fixed} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            className="table-toggle"
+            onClick={() => setShowTable((open) => !open)}
+            aria-expanded={showTable}
+          >
+            {showTable ? "Hide" : "Show"} the numbers as a table
+          </button>
+        </div>
+        {showTable && <ArmTable arms={showcase.arms} />}
 
         <div className="metric-grid" style={{ marginTop: 12 }}>
           <div className="card metric">

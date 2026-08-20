@@ -80,6 +80,7 @@ export interface ArmMetrics {
   falsePositiveContacts: number;
   fraudulentCollections: number;
   fraudCasesAvoided: number;
+  byFailureClass: Record<string, { cases: number; netValuePaise: number; paidCases: number }>;
 }
 
 export interface DecisionMetrics {
