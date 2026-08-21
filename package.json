@@ -13,7 +13,8 @@
     "test:web": "cd web && bun test tests/",
     "razorpay:webhook": "bun run src/razorpay/server.ts",
     "razorpay:link": "bun run src/razorpay/createLink.ts",
-    "razorpay:status": "bun run src/razorpay/status.ts"
+    "razorpay:status": "bun run src/razorpay/status.ts",
+    "deploy:pages": "bash scripts/deploy-pages.sh"
   },
   "devDependencies": {
     "@types/bun": "latest",
