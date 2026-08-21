@@ -5,6 +5,11 @@ safety rules, and measures incremental recovery against shared counterfactual ou
 
 Built for the Razorpay AI Buildathon — **AI Revenue Recovery** track.
 
+**[▶ Live Recovery Desk](https://shubhamsah27.github.io/Razorpay/)** — a static demo over the recorded audit trail.
+It is a read-only front end: it receives no Razorpay webhooks and makes no API calls. The real
+Test Mode integration proof is a separate local run, documented
+[below](#razorpay-test-mode--verified-end-to-end).
+
 ```bash
 bun install
 bun test          # 79 backend tests
@@ -315,7 +320,11 @@ bun run razorpay:status   # actions, transitions, receipts, outcomes, exceptions
 
 All three commands share `recoup-testmode.sqlite` in the repo root, so run them from there.
 
-### Verified end to end in Razorpay Test Mode
+### Razorpay Test Mode — verified end to end
+
+> **This is not the GitHub Pages demo.** The hosted Desk is a static build and never talks to
+> Razorpay. The proof below came from the webhook listener running locally behind a `zrok`
+> tunnel, against the real Razorpay API.
 
 The full path has been exercised against the real Razorpay API — not a mock. Run on
 2026-08-21 for `case_demo_02` at ₹149.00:
@@ -473,8 +482,8 @@ web/            Recovery Desk
 1. **The five-minute demo video.** Everything it needs to show now exists and is reproducible.
 2. **3D tile-click interaction** is unit-tested for its case mapping but has not been verified
    by a human click in a foreground browser.
-3. **Deployment.** The Recovery Desk is a static build and is not yet hosted, so there is no
-   public link a reviewer can click.
+3. **The hosted Desk is static only.** [https://shubhamsah27.github.io/Razorpay/](https://shubhamsah27.github.io/Razorpay/) renders the recorded audit trail; it
+   receives no webhooks and issues no API calls. Anything live requires the local runbook.
 4. **Webhook secret rotation.** Verification uses a single `RAZORPAY_WEBHOOK_SECRET`. Razorpay
    requires the *old* secret when retrying deliveries created before a rotation, so do not
    rotate the secret while deliveries are in flight.

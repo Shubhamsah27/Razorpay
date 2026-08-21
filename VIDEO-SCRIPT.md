@@ -5,7 +5,8 @@ Target **4:50–5:00**. Spoken text is ~700 words at a natural 140 wpm. Say the 
 
 **Before recording**
 
-- `bun run demo` running, Recovery Desk open, `Card Expired #00001` already selected.
+- `bun run demo` running locally, Recovery Desk open, `Card Expired #00001` already selected.
+  (Record from the local build, not the hosted one — the hosted Desk at https://shubhamsah27.github.io/Razorpay/ is for viewers.)
 - A second tab with the `bun run razorpay:status` output from the real Test Mode run.
 - Terminal ready with `bun run eval` already executed, output scrolled to the arm table.
 - Close Slack/notifications. Record at 1920×1080. Do not zoom during the runtime-path shot —
@@ -144,13 +145,15 @@ receipt id and the recovered outcome.
 
 ## 4:45 – 5:00 · Close
 
-**Show** — Desk wide shot, then README top with the repo URL on screen.
+**Show** — Desk wide shot, then README top with the repo URL and the live link
+`https://shubhamsah27.github.io/Razorpay/` on screen.
 
 **Say**
 
 > Recoup: nine thousand lines, ninety-eight tests, a deterministic safety guard, exactly-once
 > execution against a real payment provider, and an evaluation designed so the result means
-> something. Repo and architecture docs are linked below. Thank you.
+> something. The dashboard is live at the link below — that's a static build of these same
+> records, so explore it freely. Repo and architecture docs are there too. Thank you.
 
 ---
 

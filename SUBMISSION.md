@@ -2,6 +2,7 @@
 
 Razorpay AI Buildathon, **AI Revenue Recovery** track.
 Repository: `github.com/Shubhamsah27/Razorpay` · Architecture: [README.md](README.md)
+**Live Recovery Desk:** [https://shubhamsah27.github.io/Razorpay/](https://shubhamsah27.github.io/Razorpay/)
 
 ---
 
@@ -14,6 +15,18 @@ has a durable identity and a full audit trail.
 Two claims it deliberately does not make: it never pretends to re-charge a failed card
 (recovery is always a new customer-initiated Payment Link), and its evaluation arms never share
 a random-number generator.
+
+---
+
+## Two different things, kept separate
+
+| | What it is | Talks to Razorpay? |
+|---|---|---|
+| **Hosted Recovery Desk** (GitHub Pages) | Static build over the recorded audit trail | **No.** No webhooks, no API calls. |
+| **Test Mode E2E run** (local + `zrok`) | The real integration proof below | **Yes.** Real Payment Link, real signed webhook. |
+
+The hosted demo exists so a reviewer can see the decisions without cloning. It is not, and does
+not claim to be, a live integration.
 
 ---
 
@@ -107,7 +120,8 @@ effectiveness. The two claims are kept separate everywhere.
 ## Honest limitations
 
 1. **The five-minute video is not yet recorded.**
-2. **The Recovery Desk is not deployed**, so there is no public link to click.
+2. **The hosted Desk is static.** It renders recorded audit records and receives no webhooks;
+   the live path requires the local runbook.
 3. **3D tile-click interaction** is unit-tested for case mapping but not human-verified.
 4. **Webhook secret rotation** is unsupported: verification uses a single secret, and Razorpay
    requires the *old* secret for retries of deliveries created before a rotation.
