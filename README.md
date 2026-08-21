@@ -259,6 +259,65 @@ comparison — parsing and re-serialising first would change the bytes and break
 
 ---
 
+## Razorpay Test Mode runbook
+
+Requires a `.env` (gitignored) with `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and
+`RAZORPAY_WEBHOOK_SECRET`. The config helper **refuses any key that is not `rzp_test_`**, and a
+local budget of 15 links stays under Razorpay's documented 30-link Test Mode cap. No credential
+is ever logged.
+
+**1. Start the webhook listener** (leave running):
+
+```bash
+bun run razorpay:webhook          # http://localhost:8787/webhooks/razorpay
+```
+
+**2. Expose it publicly.** Razorpay blacklists several tunnels for security — **`ngrok.io`,
+`loca.lt`, `webhook.site`, `requestbin.com` and `hookbin.com` will not deliver.** Razorpay
+[recommends `zrok`](https://razorpay.com/docs/webhooks/validate-test/); a staging endpoint is
+safer still.
+
+```bash
+zrok share public 8787
+```
+
+Register `<public-url>/webhooks/razorpay` in **Dashboard → Settings → Webhooks** using the same
+secret as `RAZORPAY_WEBHOOK_SECRET`, subscribed to `payment_link.paid`,
+`payment_link.partially_paid` and `payment_link.expired`. Test mode prompts for OTP `754081`.
+
+> If the webhook secret is ever rotated, retries of **older** deliveries must be validated with
+> the **old** secret.
+
+**3. Create a real Payment Link** through the full production path — durable action key, atomic
+claim committed before the call, reconciliation by `reference_id` if the result is ambiguous:
+
+```bash
+bun run razorpay:link                       # Rs 1,499 default
+bun run razorpay:link case_demo_01 250000   # caseId, amount in paise
+```
+
+Pay the printed `short_url` with test card `4111 1111 1111 1111`, any future expiry, any CVV.
+
+**4. Verify what actually happened:**
+
+```bash
+bun run razorpay:status   # actions, transitions, receipts, outcomes, exceptions
+```
+
+All three commands share `recoup-testmode.sqlite` in the repo root, so run them from there.
+
+### Verified locally before spending a link
+
+The endpoint was rehearsed against a signed payload with no Razorpay calls:
+
+| Case | Result |
+|---|---|
+| Valid signature | `200 processed`, outcome recorded once |
+| Same `event_id` redelivered | `200 duplicate`, no double-count |
+| Tampered signature | `400`, nothing recorded |
+
+---
+
 ## Results on the committed seed
 
 `bun run eval`, 2000 cases, seed `recoup-buildathon-2026-v1`:
