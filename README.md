@@ -13,6 +13,15 @@ bun run eval      # deterministic report for the committed seed
 bun run demo      # regenerate the showcase and open the Recovery Desk
 ```
 
+Razorpay Test Mode (needs a gitignored `.env`) — see the
+[runbook](#razorpay-test-mode-runbook):
+
+```bash
+bun run razorpay:webhook   # signed webhook listener on /webhooks/razorpay
+bun run razorpay:link      # create a real Test Mode Payment Link
+bun run razorpay:status    # actions, receipts, outcomes, exceptions
+```
+
 `bun run eval` is byte-identical for a fixed seed. No AI key and no external infrastructure
 are needed for the evaluation or the demo.
 
@@ -278,7 +287,7 @@ bun run razorpay:webhook          # http://localhost:8787/webhooks/razorpay
 safer still.
 
 ```bash
-zrok share public 8787
+zrok share public http://127.0.0.1:8787
 ```
 
 Register `<public-url>/webhooks/razorpay` in **Dashboard → Settings → Webhooks** using the same
@@ -306,9 +315,40 @@ bun run razorpay:status   # actions, transitions, receipts, outcomes, exceptions
 
 All three commands share `recoup-testmode.sqlite` in the repo root, so run them from there.
 
-### Verified locally before spending a link
+### Verified end to end in Razorpay Test Mode
 
-The endpoint was rehearsed against a signed payload with no Razorpay calls:
+The full path has been exercised against the real Razorpay API — not a mock. Run on
+2026-08-21 for `case_demo_02` at ₹149.00:
+
+```bash
+bun run razorpay:webhook                      # terminal 1, listener
+zrok2 share public http://127.0.0.1:8787      # terminal 2, public tunnel
+bun run razorpay:link case_demo_02 14900      # terminal 3, creates the real link
+bun run razorpay:status                       # read back what happened
+```
+
+```mermaid
+flowchart LR
+    A[Payment Link created<br/>plink_TSMm1r1VCQdFhy] --> B[Test Mode browser payment]
+    B --> C[payment_link.paid webhook]
+    C --> D[HMAC-SHA256 verified<br/>over raw body]
+    D --> E[Idempotent receipt<br/>TSMmtoQ2mnNXVO]
+    E --> F[Recovered outcome<br/>case_demo_02, Rs 149.00]
+```
+
+| Evidence | Value |
+|---|---|
+| Payment Link id | `plink_TSMm1r1VCQdFhy` |
+| Reference id (derived from the action key) | `rcp_fdeaab97b1f53b2ad0fc69ea245342d1b1d8` |
+| Webhook receipt id | `TSMmtoQ2mnNXVO` |
+| Recorded outcome | `case_demo_02` recovered **₹149.00** |
+| Open exceptions | none |
+
+Every stage succeeded: Payment Link creation, browser payment in Test Mode, signed webhook
+verification, idempotent receipt, and recovery reconciliation. These are Test Mode identifiers
+and contain no credential material.
+
+The same endpoint was also rehearsed offline against a signed payload, with no Razorpay calls:
 
 | Case | Result |
 |---|---|
@@ -424,18 +464,20 @@ web/            Recovery Desk
 | 2 — diagnosis, policy, safety guard | **Done** |
 | 3 — durable action state, atomic claim, idempotency | **Done** |
 | 4 — Recoup arm and attribution metrics | **Done** |
-| 5 — Razorpay Test Mode integration and reconciliation | **Partial** — adapter, classification and reconciliation are built and mock-proven; the live Test Mode run is not done and `razorpayConfigFromEnv` is not yet wired to a runnable entry point |
+| 5 — Razorpay Test Mode integration and reconciliation | **Done** — verified end to end against the real API: Payment Link creation, browser payment, signed `payment_link.paid` webhook, idempotent receipt, recovered outcome. Evidence above. |
 | 6 — Recovery Desk UI | **Done** |
-| 7 — submission package | **Partial** — deterministic `demo` and `eval` work from a clean clone and this document is the architecture write-up; the five-minute video is not recorded |
+| 7 — submission package | **Partial** — deterministic `demo` and `eval` run from a clean clone, this document is the architecture write-up, and the Test Mode proof is captured; the five-minute video is not yet recorded |
 
 ### What is genuinely not done
 
-1. **Live Razorpay Test Mode proof.** Needs `rzp_test_…` credentials. The config helper refuses
-   any key that is not `rzp_test_`, and a local budget guards Razorpay's documented 30-link Test
-   Mode cap. Until that run happens, no claim of real provider integration should be made.
-2. **The demo video**, which should be recorded immediately after that run.
-3. **3D tile-click interaction** is unit-tested for its case mapping but has not been verified
+1. **The five-minute demo video.** Everything it needs to show now exists and is reproducible.
+2. **3D tile-click interaction** is unit-tested for its case mapping but has not been verified
    by a human click in a foreground browser.
+3. **Deployment.** The Recovery Desk is a static build and is not yet hosted, so there is no
+   public link a reviewer can click.
+4. **Webhook secret rotation.** Verification uses a single `RAZORPAY_WEBHOOK_SECRET`. Razorpay
+   requires the *old* secret when retrying deliveries created before a rotation, so do not
+   rotate the secret while deliveries are in flight.
 
 ---
 
